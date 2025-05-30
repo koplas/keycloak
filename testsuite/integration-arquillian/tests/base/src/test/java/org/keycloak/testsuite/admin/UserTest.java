@@ -39,6 +39,7 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.common.VerificationException;
 import org.keycloak.common.util.Base64;
 import org.keycloak.common.util.MultivaluedHashMap;
+import org.keycloak.common.util.MultivaluedMap;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.events.admin.OperationType;
@@ -828,6 +829,14 @@ public class UserTest extends AbstractAdminTest {
         attributes.put("attr", "common");
         attributes.put(UserModel.EXACT, Boolean.FALSE.toString());
         assertThat(realm.users().count(null, null, null, null, null, null, null, mapToSearchQuery(attributes)), is(9));
+
+        MultivaluedMap<String, String> multiAttributes = new MultivaluedHashMap<>();
+        multiAttributes.put("attr", List.of("common", "common2"));
+        assertThat(realm.users().count(null, null, null, null, null, null, null, multiMapToSearchQuery(multiAttributes)), is(9));
+
+        multiAttributes = new MultivaluedHashMap<>();
+        multiAttributes.put("attr", List.of("notCommon", "common"));
+        assertThat(realm.users().count(null, null, null, null, null, null, null, multiMapToSearchQuery(multiAttributes)), is(0));
     }
 
   @Test
@@ -907,6 +916,14 @@ public class UserTest extends AbstractAdminTest {
                 .collect(Collectors.joining(" "));
     }
 
+
+    private String multiMapToSearchQuery(MultivaluedMap<String, String> search) {
+        return search.entrySet()
+                .stream()
+                .flatMap(e -> e.getValue().stream().map(value -> String.format("%s:%s", e.getKey(), value)))
+                .collect(Collectors.joining(" "));
+    }
+
     @Test
     public void searchByAttribute() {
         createUsers();
@@ -946,6 +963,17 @@ public class UserTest extends AbstractAdminTest {
         //with exact=true the user shouldn't be returned
         users = realm.users().searchByAttributes(mapToSearchQuery(Map.of("test", "est", "attr", "mm", "test1", "test1")), Boolean.TRUE);
         assertThat(users, hasSize(0));
+
+        MultivaluedMap<String, String> search = new MultivaluedHashMap<>();
+        search.put("attr", List.of("common", "common2"));
+        users = realm.users().searchByAttributes(multiMapToSearchQuery(search), true);
+        assertThat(users, hasSize(9));
+
+        search = new MultivaluedHashMap<>();
+        search.put("attr", List.of("notCommon", "common"));
+        users = realm.users().searchByAttributes(multiMapToSearchQuery(search), true);
+        assertThat(users, hasSize(0));
+
     }
 
     @Test
