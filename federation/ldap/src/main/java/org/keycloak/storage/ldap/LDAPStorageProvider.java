@@ -385,7 +385,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
      * <em>getUserAttributes</em>).
      */
     @Override
-    public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> params, Integer firstResult, Integer maxResults) {
+    public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> params, Integer firstResult, Integer maxResults, String sortBy) {
         String search = params.get(UserModel.SEARCH);
         Stream<LDAPObject> result = search != null ?
                 searchLDAP(realm, search, firstResult, maxResults) :

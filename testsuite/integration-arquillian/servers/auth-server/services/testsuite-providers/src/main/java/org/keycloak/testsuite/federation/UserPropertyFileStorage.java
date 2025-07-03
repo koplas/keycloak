@@ -230,7 +230,7 @@ public class UserPropertyFileStorage implements UserLookupProvider, UserStorageP
 //    }
 
     @Override
-    public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> attributes, Integer firstResult, Integer maxResults) {
+    public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> attributes, Integer firstResult, Integer maxResults, String sortBy) {
         addCall(SEARCH_METHOD, firstResult, maxResults);
         String search = Optional.ofNullable(attributes.get(UserModel.USERNAME))
                 .orElseGet(()-> attributes.get(UserModel.SEARCH));
